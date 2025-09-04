@@ -39,3 +39,21 @@ A modern **AI-powered company handbook** designed to streamline onboarding and i
    - Users interact with the React frontend, which queries Pinecone for relevant embeddings and generates answers using GPT.  
 
 ---
+
+## Development Phase 
+
+Keeping Track of Development Progress
+
+### 09/04
+
+- [x] Building out Django Application Template 
+- [x] Custom User + Handbook Model 
+  - Set up Media Files in settings
+  - Foreign key One-Many 
+  - Create seperate app **(Remember to migrate Custom user first)**
+  - File Uploads support PDF ONLY
+- [x] CRUD Handbook --> Using Restframework 
+  - Parital Updates 
+  - Serializer Mixin + Url Hyperlink 
+  - Multipart Form Parsers
+- [ ] ~~Register Users~~ Tomorrow 
