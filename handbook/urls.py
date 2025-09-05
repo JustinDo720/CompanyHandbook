@@ -18,8 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings 
 from django.conf.urls.static import static
+from handbook_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('handbook_app.urls'))
+    # Home Page
+    path('', views.HomePage.as_view(), name='homepage'),
+    path('api/', include('handbook_app.urls')),
+    path('company/', include('companies.urls')),
+    # Browsable API Logins
+    path('api-auth/', include('rest_framework.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

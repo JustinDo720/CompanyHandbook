@@ -1,9 +1,23 @@
 from django.shortcuts import render
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response 
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.views import APIView
+from rest_framework.reverse import reverse
 from .models import Handbook
-from .serializers import GETHandbookSerializer, POSTHandbookSerializer
+from .serializers import GETHandbookSerializer, POSTHandbookSerializer, ListHandbookSerializer
+from .permissions import IsOwnerOrAdminHandbook
+
+
+# Links to all the necessaary API 
+class HomePage(APIView):
+    def get(self, request, *args, **kwargs):
+        return Response({
+            "handbook-api": reverse('list_create_handbook', request=request),
+            # Make sure we have the app_name in comapnies app and we use a ":" not a "."
+            "company-api": reverse('companies:list_companies', request=request)
+        })
+
 
 class SpecificSerializerMixin:
     """
@@ -11,11 +25,21 @@ class SpecificSerializerMixin:
     """
     def get_serializer_class(self):
         return POSTHandbookSerializer if self.request.method in ['POST', 'PUT', 'PATCH'] else GETHandbookSerializer
+    
+class ListSerializerMixin:
+    """
+        Applying for ListCreateHandbook since we have two seperate GET vs List Serialzier 
+    """
+    def get_serializer_class(self):
+        return POSTHandbookSerializer if self.request.method in ['POST', 'PUT', 'PATCH'] else ListHandbookSerializer
 
 # Create your views here.
-class ListCreateHandbook(SpecificSerializerMixin, generics.ListCreateAPIView):
+class ListCreateHandbook(ListSerializerMixin, generics.ListCreateAPIView):
     queryset = Handbook.objects.all()
     parser_classes = [MultiPartParser, FormParser]
+    # The problem here is that List overrides our permissions so we must work with filtering via requested user to ONLY SHOW that persons Handbook
+    # permission_classes = [IsOwnerOrAdminHandbook]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]    # Best Option for now
 
     def list(self, request, *args, **kwargs):
         all_handbooks = self.get_queryset()
@@ -33,6 +57,10 @@ class RetrieveUpdateDestroyHandbook(SpecificSerializerMixin, generics.RetrieveUp
     queryset = Handbook.objects.all()
     parser_classes = [MultiPartParser, FormParser]
     lookup_field = 'id'
+    # For retreive this permission works perfectly
+    #
+    # If the requested company ISNT the ssame one on record, there's no ability to see, update or delete the record
+    permission_classes = [IsOwnerOrAdminHandbook]
 
     # Don't forget to put *args and **kwargs to handle the routing...
     def get(self, request, *args, **kwargs):

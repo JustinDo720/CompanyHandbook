@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     # Project Apps
     'handbook_app',
     'companies',
-    'rest_framework'
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +135,30 @@ AUTH_USER_MODEL = 'companies.CompanyUser'
 # Media 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+# Restframework settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+from datetime import timedelta
+
+# SJWT 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+}
+
+# Djoser
+DJOSER = {
+    # Turning off Confirmation and Activation (For Now)
+    "SEND_CONFIRMATION_EMAIL": False,
+    "SEND_ACTIVATION_EMAIL": False,
+    "SERIALIZERS": {
+        'user_create': 'companies.serializers.UserCreateSerializer',
+    }
+} 
