@@ -12,9 +12,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# Loading up our .env file 
+load_dotenv()
 
 
 # Quick-start development settings - unsuitable for production
@@ -28,6 +31,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Pinecone Keys
+PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
+PINECONE_INDEX = os.getenv('PINECONE_INDEX')
 
 # Application definition
 
