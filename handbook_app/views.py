@@ -7,6 +7,7 @@ from rest_framework.reverse import reverse
 from .models import Handbook
 from .serializers import GETHandbookSerializer, POSTHandbookSerializer, ListHandbookSerializer
 from .permissions import IsOwnerOrAdminHandbook
+import fitz
 
 
 # Links to all the necessaary API 
@@ -46,10 +47,33 @@ class ListCreateHandbook(ListSerializerMixin, generics.ListCreateAPIView):
         serializer = self.get_serializer(all_handbooks, many=True)
         return Response(serializer.data)
     
+    # When we create a handbook we want to upload that file to Pinecone
     def create(self, request): 
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            # Since the file is okay and our service accepted it:
+            # Be sure to change file --> pdf_file because pdf_file is the field / key in the POST body 
+            file = request.FILES['pdf_file']
+            pdf = fitz.open(stream=file.read(), filetype='pdf')
+
+            # Building text 
+            text = ""
+            for page in pdf:
+                text += page.get_text()
+
+            # Local Import for a quick Lazy Initialization 
+            #
+            # Be aware of top-level imports... we must use an absolute 
+            from handbook_app.services.pinecone_services import injest 
+
+            try:
+                # Returned Vectorstore
+                vs = injest(text)
+                serializer.save()
+            except Exception as e:
+                
+                return Response({'msg': "Error with Pinecone Injestion. File was not uploaded...", 'err': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     

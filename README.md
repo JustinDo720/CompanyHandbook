@@ -75,6 +75,7 @@ Keeping Track of Development Progress
   - Hyperlinked Handbook to Companies and vice versa 
     - `serialiers.HyperlinkedRelatedField` 
 - [ ] ~~Work on Pinecone + LLM~~ (Tomorrow) 
+  - `pip install pinecone-client` then we set up in **settings.py**
 - [x] Guard our Handbook API (Auth ONLY)
   - Custom Permission?? --> IsOwnerOrAdmin --> `return obj.company == request.user`
   - `IsOwnerOrAdminHandbook` only applies to **Retrieve Update or Destroy** but cannot be applied on **List**
@@ -87,3 +88,62 @@ We also created two seperate Serializer for List vs Get Handbook API
 - Retrieve Update Destroy Handbook 
   - Protected via `IsOwnerOrAdminHandbook` permission 
   - Other unauthorized users CANNOT see the important details...
+
+### 09/09
+- [x] Work on Pinecone + LLM
+  - `pip install pinecone-client`
+  - Create a service to return our **pinecone index** + **openai_embeddings**
+  - Connect & Read PDF
+  - Langchain
+    - `pip install pinecone langchain langchain-pinecone langchain-openai`
+    - Set up your Recursive Text Splitter 
+    - Split up your text 
+  - Langchain_pinecone 
+    - Injest splitter into Pinecone via **embeddings**
+- [x] PDF Injestion
+  - **fitz** --> `pip install PyMuPDF`
+  - **Lazy Init** by importing ONLY in the **create** Request in our API View 
+    - Be sure to put this **service** folder under our app then import via **absolute**: `handbook_app.services.pinecone_services`
+- Error that we'll run into:
+  - Namespace --> we'll be using the format `f'{company_name}-{pdf_namespace}'` 
+  - This way we use **ONE** index for **MULTIPLE** companies since we'll be filtering during **query stage**
+
+**Pinecone + LLM Recap**
+
+Objective: **Split, embed, injest**
+
+**Splitting**
+
+```py
+from langchain_text_splitter import RecursiveCharacterTextSplitter
+
+# Given a text variable --> pdf reader return
+splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+
+# Use splitter to create documents 
+documents = splitter.create_documents([text])
+```
+
+**Embedding**
+
+```py
+from langchain_openai import OpenAIEmbeddings
+
+embedding = OpenAIEmbeddings(model='YOUR EMBEDDING MODEL')
+```
+
+**Injesting**
+
+```py
+from langchain_pinecone import PineconeVectorStore
+
+store = PineconeVectorStore.from_documents(
+  documents=documents,
+  embedding=embedding,
+  # Make sure its index_name= not just index=
+  index_name='INDEX_NAME_HERE'
+)
+```
+
+**NOTE: Error via Pydantic v2**
+- Langchain uses pydantic v2 so we need to import **Pydantic Directly**
