@@ -147,3 +147,16 @@ store = PineconeVectorStore.from_documents(
 
 **NOTE: Error via Pydantic v2**
 - Langchain uses pydantic v2 so we need to import **Pydantic Directly**
+
+**NOTE: Environmental Variables**
+- When using **dotenv** our `.env` file is at project level therefore it's best to just set up the **CONSTANTS** in `settings.py` then import via: `from django.conf import settings`
+
+### 09/10
+- [x] Set up Retreival with OpenAI 
+  - Use our `OpenAIEmbeddings` to embed our **question**: `embeddings.embed_query(q)`
+  - Query via index: `index.query(vector=embed, top_k=N, include_metadata=True)`
+  - Our text is within the metadata --> `['metadata']['text']`
+  - Build an AI prompt with the **context** and **user question**
+  - Use AI Client to create a chat: `client.chat.completions.create(model='', messages=[])`
+  - Return the response from LLM via: `resp.choices[0].message.content`
+- [ ] ~~Set up Namespacing for different companies~~ 

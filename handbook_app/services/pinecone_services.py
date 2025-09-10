@@ -6,7 +6,7 @@ from django.conf import settings
 
 pc = Pinecone(api_key=settings.PINECONE_API_KEY, environment='us-east-1')
 _index = pc.Index(settings.PINECONE_INDEX)
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small", api_key=settings.OPENAI_API_KEY)
 _splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
 
 # Create a function to return our index and/or pinecone client 
@@ -24,3 +24,44 @@ def injest(text: str):
         # Make sure its index_name= not just index=
         index_name=settings.PINECONE_INDEX)
     return vectorstore
+
+def question(q: str, top_k: int = 3, temp: int = 0):
+    # Local import for lazy init 
+    from openai import OpenAI
+
+    # We only need the Client in this function so let's avoid building this object when its unnecessary
+    ai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+    # Embed  our qestion and build context for our LLM
+    # 
+    # This is exactly the same as using your: client.embeddings.create(model='model', input="Question here") 
+    question_embedded = embeddings.embed_query(q)
+
+    # Using our index to query taking top K results.
+    #
+    # We've included metadata to grab the messages 
+    res = get_index().query(
+        vector=question_embedded,
+        top_k=top_k,
+        include_metadata=True
+    )
+
+    # Building the context for our LLM 
+    context = "\n\n".join(m['metadata']['text'] for m in res['matches'])
+    prompt = f"""
+    You are an assistant with access to the following context from a document:
+
+    {context}
+
+    Answer the question based only on the above context.
+    Question: {q}
+    """
+
+    ai_response = ai_client.chat.completions.create(
+        model='gpt-4o',
+        messages=[{'role':'user', 'content': prompt}],
+        # We want 0 because its more direct and a 1-to-1 answer no fluff
+        temperature=temp
+    )
+
+    return ai_response.choices[0].message.content

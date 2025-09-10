@@ -35,6 +35,9 @@ ALLOWED_HOSTS = []
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 PINECONE_INDEX = os.getenv('PINECONE_INDEX')
 
+# OpenAI LLM 
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
 # Application definition
 
 INSTALLED_APPS = [

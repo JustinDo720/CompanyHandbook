@@ -14,6 +14,7 @@ import fitz
 class HomePage(APIView):
     def get(self, request, *args, **kwargs):
         return Response({
+            "question-api": reverse('answer_question', request=request),
             "handbook-api": reverse('list_create_handbook', request=request),
             # Make sure we have the app_name in comapnies app and we use a ":" not a "."
             "company-api": reverse('companies:list_companies', request=request)
@@ -106,3 +107,29 @@ class RetrieveUpdateDestroyHandbook(SpecificSerializerMixin, generics.RetrieveUp
         return Response({
             "msg": "Handbook was removed successfully."
         }, status=status.HTTP_200_OK)
+    
+# Questioning 
+class AskQuestion(APIView):
+    """
+        User would ask question for LLM Response 
+    """
+    def get(self, request, *args, **kwargs):
+        # Endpoint to let our API users know what to add in their content body
+        return Response({
+            'details': "Send POST request with the key: question"
+        })
+
+    def post(self, request, *args, **kwargs):
+        from handbook_app.services.pinecone_services import question
+        # We need to use request.data.get not request.POST because it's only to handle forms 
+        q = request.data.get('question')
+        try:
+            llm_answer = question(q)
+            return Response({
+                'answer': llm_answer
+            })
+        except Exception as e:
+            return Response({
+                'msg': "LLM Model failed to answer question",
+                'err': str(e)
+            })
