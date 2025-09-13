@@ -8,14 +8,15 @@ from .models import Handbook
 from .serializers import GETHandbookSerializer, POSTHandbookSerializer, ListHandbookSerializer
 from .permissions import IsOwnerOrAdminHandbook
 import fitz
+from companies.models import CompanyUser
 
 
 # Links to all the necessaary API 
 class HomePage(APIView):
     def get(self, request, *args, **kwargs):
         return Response({
-            "question-api": reverse('answer_question', request=request),
-            "handbook-api": reverse('list_create_handbook', request=request),
+            # "question-api": reverse('answer_question', request=request),
+            "handbook-api": reverse('handbook:list_create_handbook', request=request),
             # Make sure we have the app_name in comapnies app and we use a ":" not a "."
             "company-api": reverse('companies:list_companies', request=request)
         })
@@ -69,8 +70,9 @@ class ListCreateHandbook(ListSerializerMixin, generics.ListCreateAPIView):
 
             try:
                 # Returned Vectorstore
-                vs = injest(text)
-                serializer.save()
+                new_handbook = serializer.save()
+                vs = injest(text, new_handbook.get_pc_namespace())
+                
             except Exception as e:
                 
                 return Response({'msg': "Error with Pinecone Injestion. File was not uploaded...", 'err': str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -112,7 +114,12 @@ class RetrieveUpdateDestroyHandbook(SpecificSerializerMixin, generics.RetrieveUp
 class AskQuestion(APIView):
     """
         User would ask question for LLM Response 
+            Updated: Company Specific --> Asking questions based on the Companies PDF 
+
+        The idea is to ask a specific company questions based on their PDF 
     """
+    permission_classes = [IsOwnerOrAdminHandbook]
+
     def get(self, request, *args, **kwargs):
         # Endpoint to let our API users know what to add in their content body
         return Response({
@@ -124,7 +131,18 @@ class AskQuestion(APIView):
         # We need to use request.data.get not request.POST because it's only to handle forms 
         q = request.data.get('question')
         try:
-            llm_answer = question(q)
+            # We should have the company name in our URLS so we could access via **kwargs
+            company = CompanyUser.objects.get(company_slug=kwargs.get('company'))
+            """
+            TODO: Reconfigure Question function to FILTEr via company slug (grab all the files pertaining to the company) [DONE]
+            TODO: Check if this APIVIew works with kwargs.get('company') query [DONE]
+
+            NOTE: We could filter our company for all related handbook namespaces, loop through them and query + extend our results array;
+            however, for our application we want one company to have multiple BASE PDF. Our CRON job later will delete the duplicates or old variants. For now,
+            let's allow mutliple submissions/files for one company.
+            """
+            company_handbooks_ns = [handbook.get_pc_namespace() for handbook in company.handbooks.all()]
+            llm_answer = question(q, company_handbooks_ns)
             return Response({
                 'answer': llm_answer
             })

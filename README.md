@@ -160,3 +160,16 @@ store = PineconeVectorStore.from_documents(
   - Use AI Client to create a chat: `client.chat.completions.create(model='', messages=[])`
   - Return the response from LLM via: `resp.choices[0].message.content`
 - [ ] ~~Set up Namespacing for different companies~~ 
+
+## 09/12
+- [x] Seting up Namespacing for different companies
+  - Revised Model function to return namesapce 
+  - Use namespace during **injestion** and **retrieval** period 
+  - Question API Under Companies where we filter the handbooks related then supply our Pinecone script with the namespaces
+    - Looped over the namespaces and query the results based on namespace 
+    - Took the **results** which is an object with **matches**: `res["matches"]` --> `res{matches: []}`
+    - Extended a "**mass_matches**" array, sorted via **score** desc order then took **top_k**
+    - Provided that as context to LLM 
+  - Users can upload multiple Index with the new **namespace system** which allows LLM to read across ALL related **COMPANY** files...
+- ~~Delete/Updates Reflect Pinecone~~
+- ~~CRON remove / clean dupes~~

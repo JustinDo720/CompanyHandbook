@@ -16,16 +16,18 @@ def get_index():
 def get_splitter():
     return _splitter
 
-def injest(text: str):
+def injest(text: str, ns: str):
     pdf_splitter = get_splitter().create_documents([text])
     vectorstore = PineconeVectorStore.from_documents(
         documents=pdf_splitter,
         embedding=embeddings,
         # Make sure its index_name= not just index=
-        index_name=settings.PINECONE_INDEX)
+        index_name=settings.PINECONE_INDEX,
+        # Namespace to label our files based on different companies
+        namespace=ns)
     return vectorstore
 
-def question(q: str, top_k: int = 3, temp: int = 0):
+def question(q: str, ns: list, top_k: int = 3, temp: int = 0):
     # Local import for lazy init 
     from openai import OpenAI
 
@@ -39,15 +41,28 @@ def question(q: str, top_k: int = 3, temp: int = 0):
 
     # Using our index to query taking top K results.
     #
-    # We've included metadata to grab the messages 
-    res = get_index().query(
-        vector=question_embedded,
-        top_k=top_k,
-        include_metadata=True
-    )
+    # We've included metadata to grab the messages
+    # 
+    # We're using namespace to query the specific company's information ONLY 
+    mass_results = []
+    for namespace in ns:
+        res = get_index().query(
+            vector=question_embedded,
+            top_k=top_k,
+            include_metadata=True,
+            namespace=namespace
+        )
+        # res is an object with matches array so we extend this into our current mass_results array
+        mass_results.extend(res['matches'])
+
+    # Because we concat all of our matches we need to sort by score 
+    mass_results.sort(key= lambda m : m['score'], reverse=True)
+    # Based off of our k value we take the best 3 results 
+    top_mass_results = mass_results[:top_k]
 
     # Building the context for our LLM 
-    context = "\n\n".join(m['metadata']['text'] for m in res['matches'])
+    context = "\n\n".join(m['metadata']['text'] for m in top_mass_results)
+
     prompt = f"""
     You are an assistant with access to the following context from a document:
 

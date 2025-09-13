@@ -1,6 +1,7 @@
 from django.db import models
 from .validators import validate_file_extension
 from companies.models import CompanyUser
+from django.utils.text import slugify
 
 # Create your models here.
 class Handbook(models.Model):
@@ -14,3 +15,10 @@ class Handbook(models.Model):
 
     def __str__(self):
         return self.namespace
+    
+    def get_pc_namespace(self):
+        # Let's suglify our fields to avoid weird characters appearing in Pinecone 
+        company_name = slugify(self.company.company_name)
+        handbook_name = slugify(self.namespace)
+        # Return the Pinecone (pc) Namespace for query and injestion 
+        return f'company-{company_name}-doc-{handbook_name}'
