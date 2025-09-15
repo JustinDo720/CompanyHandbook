@@ -100,16 +100,34 @@ class RetrieveUpdateDestroyHandbook(SpecificSerializerMixin, generics.RetrieveUp
         serializer = self.get_serializer(handbook, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            # We also want to update Pinecone based on 2 seperate conditions... 
+            if 'pdf_file' in request.FILES:
+                # User is sending new pdf file to replace the current 
+                pdf_file = request.FILES['pdf_file']
+
+            if 'namespace' in request.data:
+                namespace = request.data.get('namespace')
+                
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self,request, *args, **kwargs):
-        handbook = self.get_object()
-        handbook.delete()
-        return Response({
-            "msg": "Handbook was removed successfully."
-        }, status=status.HTTP_200_OK)
-    
+        try:
+            handbook = self.get_object() 
+            handbook.delete()
+
+            # When we Remove a handbook in our database we also want to remove it on Pinecone
+            from handbook_app.services.pinecone_services import get_pinecone
+            pc = get_pinecone()
+            pc.delete_index(name=handbook.get_pc_namespace())
+            return Response({
+                "msg": "Handbook was removed successfully."
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "msg": "Error removing handbook from server and/or Pinecone",
+                "err": str(e)
+            })
 # Questioning 
 class AskQuestion(APIView):
     """

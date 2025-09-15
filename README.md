@@ -173,3 +173,7 @@ store = PineconeVectorStore.from_documents(
   - Users can upload multiple Index with the new **namespace system** which allows LLM to read across ALL related **COMPANY** files...
 - ~~Delete/Updates Reflect Pinecone~~
 - ~~CRON remove / clean dupes~~
+
+## 09/15 
+- [ ] Delete & Update Reflects Pinecone 
+- [ ] CRON 

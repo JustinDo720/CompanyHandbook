@@ -16,6 +16,9 @@ def get_index():
 def get_splitter():
     return _splitter
 
+def get_pinecone():
+    return pc 
+
 def injest(text: str, ns: str):
     pdf_splitter = get_splitter().create_documents([text])
     vectorstore = PineconeVectorStore.from_documents(
@@ -80,3 +83,11 @@ def question(q: str, ns: list, top_k: int = 3, temp: int = 0):
     )
 
     return ai_response.choices[0].message.content
+
+# Update & Delete: Helper Functions 
+def delete_vector(namespace: str):
+    # In order to Update we'll need to remove the original 
+    #
+    # We could also upsert (Update/Insert) vectors into new namespaces
+    get_pinecone().delete_index(name=namespace)
+
