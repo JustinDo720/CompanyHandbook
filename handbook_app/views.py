@@ -66,16 +66,16 @@ class ListCreateHandbook(ListSerializerMixin, generics.ListCreateAPIView):
             # Local Import for a quick Lazy Initialization 
             #
             # Be aware of top-level imports... we must use an absolute 
-            from handbook_app.services.pinecone_services import injest 
+            from handbook_app.services.pinecone_services import ingest 
 
             try:
                 # Returned Vectorstore
                 new_handbook = serializer.save()
-                vs = injest(text, new_handbook.get_pc_namespace())
+                vs = ingest(text, new_handbook.get_pc_namespace())
                 
             except Exception as e:
                 
-                return Response({'msg': "Error with Pinecone Injestion. File was not uploaded...", 'err': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'msg': "Error with Pinecone Ingestion. File was not uploaded...", 'err': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -99,15 +99,32 @@ class RetrieveUpdateDestroyHandbook(SpecificSerializerMixin, generics.RetrieveUp
         handbook = self.get_object()
         serializer = self.get_serializer(handbook, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
-            # We also want to update Pinecone based on 2 seperate conditions... 
+            from handbook_app.services.pinecone_services import update_vector, update_namespace
+            # PDF_file + Namespace we Delete the current vector and create new ones 
+            #
+            # Just Namespace, copy over the vectors and upsert
             if 'pdf_file' in request.FILES:
                 # User is sending new pdf file to replace the current 
-                pdf_file = request.FILES['pdf_file']
+                file = request.FILES['pdf_file']
+                print('Changing Files')
+                pdf = fitz.open(stream=file.read(), filetype='pdf')
+                text = ''
+                for page in pdf:
+                    text += page.get_text()
 
-            if 'namespace' in request.data:
-                namespace = request.data.get('namespace')
-                
+                # Now that we have the new text from the new pdf:
+                #
+                # This will grab our namespace and DELETE the current vector while creating new vectors with that namespace
+                # Runs through the classic: Splitter, Embed, Ingest 
+                update_vector(text, handbook.get_pc_namespace())
+            elif 'namespace' in request.data:
+                new_namespace = request.data.get('namespace')
+                format_new_namespace = Handbook.generate_pc_namespace(handbook.company.company_name, new_namespace)
+                update_namespace(handbook.get_pc_namespace(), format_new_namespace)
+                print('Updating namespace ONLY')
+            
+            # Be sure to keep serializer.save() AFTER all the updates or else it consumes the file 
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -117,9 +134,8 @@ class RetrieveUpdateDestroyHandbook(SpecificSerializerMixin, generics.RetrieveUp
             handbook.delete()
 
             # When we Remove a handbook in our database we also want to remove it on Pinecone
-            from handbook_app.services.pinecone_services import get_pinecone
-            pc = get_pinecone()
-            pc.delete_index(name=handbook.get_pc_namespace())
+            from handbook_app.services.pinecone_services import delete_vector
+            delete_vector(handbook.get_pc_namespace())
             return Response({
                 "msg": "Handbook was removed successfully."
             }, status=status.HTTP_200_OK)

@@ -16,9 +16,15 @@ class Handbook(models.Model):
     def __str__(self):
         return self.namespace
     
+    # Created Static function for our model + view to use 
+    @staticmethod
+    def generate_pc_namespace(company_name:str, handbook_name:str):
+        return f'company-{slugify(company_name)}-doc-{slugify(handbook_name)}'
+    
     def get_pc_namespace(self):
         # Let's suglify our fields to avoid weird characters appearing in Pinecone 
         company_name = slugify(self.company.company_name)
         handbook_name = slugify(self.namespace)
-        # Return the Pinecone (pc) Namespace for query and injestion 
-        return f'company-{company_name}-doc-{handbook_name}'
+        # Return the Pinecone (pc) Namespace for query and ingestion 
+        ns = Handbook.generate_pc_namespace(company_name, handbook_name)
+        return ns 

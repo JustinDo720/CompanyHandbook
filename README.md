@@ -99,8 +99,8 @@ We also created two seperate Serializer for List vs Get Handbook API
     - Set up your Recursive Text Splitter 
     - Split up your text 
   - Langchain_pinecone 
-    - Injest splitter into Pinecone via **embeddings**
-- [x] PDF Injestion
+    - Ingest splitter into Pinecone via **embeddings**
+- [x] PDF Ingestion
   - **fitz** --> `pip install PyMuPDF`
   - **Lazy Init** by importing ONLY in the **create** Request in our API View 
     - Be sure to put this **service** folder under our app then import via **absolute**: `handbook_app.services.pinecone_services`
@@ -110,7 +110,7 @@ We also created two seperate Serializer for List vs Get Handbook API
 
 **Pinecone + LLM Recap**
 
-Objective: **Split, embed, injest**
+Objective: **Split, embed, ingest**
 
 **Splitting**
 
@@ -132,7 +132,7 @@ from langchain_openai import OpenAIEmbeddings
 embedding = OpenAIEmbeddings(model='YOUR EMBEDDING MODEL')
 ```
 
-**Injesting**
+**Ingesting**
 
 ```py
 from langchain_pinecone import PineconeVectorStore
@@ -164,7 +164,7 @@ store = PineconeVectorStore.from_documents(
 ## 09/12
 - [x] Seting up Namespacing for different companies
   - Revised Model function to return namesapce 
-  - Use namespace during **injestion** and **retrieval** period 
+  - Use namespace during **ingestion** and **retrieval** period 
   - Question API Under Companies where we filter the handbooks related then supply our Pinecone script with the namespaces
     - Looped over the namespaces and query the results based on namespace 
     - Took the **results** which is an object with **matches**: `res["matches"]` --> `res{matches: []}`
@@ -175,5 +175,23 @@ store = PineconeVectorStore.from_documents(
 - ~~CRON remove / clean dupes~~
 
 ## 09/15 
-- [ ] Delete & Update Reflects Pinecone 
-- [ ] CRON 
+- [ ] Delete & Update Reflects Pinecone (1/2)
+  - Worked on helper functions to remove Indexies via namespace on Pinecone
+- [ ] ~~CRON~~ 
+
+## 09/16
+- [x] Delete & Update Reflects Pinecone 
+  - Update File Functionality 
+    - Ideally we could loop through the vectors and **replace** but that's not optimal if or users upload a whole **new file** 
+    - Update function **deletes** old vector and **creates** a whole new one 
+      - Reuses our **delete vector** and **ingest** functionality 
+    - Make sure to update **Pinecone** BEFORE you `serializer.save()` because it consumed our files and **fitz** can't read the PDF
+  - Update Namespace Functionality 
+    - FUnction takes the **old + new namespace**
+    - We query the old --> build our vector array from the **matches** with `{'id': v['id], 'values': v['values'], 'metadata': v['metadata']}`
+    - then we our vectors we **upsert** (update insert) which creates a new namespace if it doesnt exists
+    - `index.upsert(vectors=vectors, namespace=new_namespace)`
+  - Delete Functionality 
+    - Access the pinecone **index** then use the `index.delete(delete_all=True, namespace='')` 
+- [ ] ~~Handle when Namespace + File is changed all at once~~
+  - Change `if if` to `if elif` because **pdf_file** priority  

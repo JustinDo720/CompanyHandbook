@@ -19,7 +19,7 @@ def get_splitter():
 def get_pinecone():
     return pc 
 
-def injest(text: str, ns: str):
+def ingest(text: str, ns: str):
     pdf_splitter = get_splitter().create_documents([text])
     vectorstore = PineconeVectorStore.from_documents(
         documents=pdf_splitter,
@@ -88,6 +88,43 @@ def question(q: str, ns: list, top_k: int = 3, temp: int = 0):
 def delete_vector(namespace: str):
     # In order to Update we'll need to remove the original 
     #
-    # We could also upsert (Update/Insert) vectors into new namespaces
-    get_pinecone().delete_index(name=namespace)
+    # Instead of using pinecone.delete_index(name=) --> Actually deleted the entire index
+    # We use index.delete(namespace=)
+    get_index().delete(delete_all=True, namespace=namespace)
 
+
+def update_vector(text: str, ns: str):
+    # For us to "Update", we actually have to Delete the old vectors and reingest 
+    #
+    # We could loop through all vectors and replace them but the question is "What if our users upload a whole different file...?"
+    delete_vector(ns)
+
+    # Reinjest new content
+    ingest(text, ns)
+
+def update_namespace(old_ns: str, new_ns: str):
+    # Copies the vectors into new namespace 
+    #
+    # Fetch Current Vector --> Upsert into new namespace 
+    current_vectors = get_index().query(
+        # Placeholder but 1536 is our dimension
+        vector=[0.0] * 1536,
+        # Fetching All Values 
+        top_k=10000,    # Enough to grab all values in our Vectors 
+        include_values=True,
+        include_metadata=True,
+        namespace=old_ns
+    )
+
+    # Copy over the ID, values and metadata (where the texts are )
+    # 
+    # Be sure you're iterating over the matches NOT the query object itself
+    transformed_vectors = [
+        {"id": v["id"], "values": v["values"], "metadata": v['metadata']}
+        for v in current_vectors['matches']
+    ]
+
+    # Removing the old namespace vector 
+    delete_vector(namespace=old_ns)
+    # Update Insert (Creates one if not exists) --> It's going to 
+    get_index().upsert(vectors=transformed_vectors, namespace=new_ns)
