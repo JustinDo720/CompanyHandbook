@@ -194,4 +194,22 @@ store = PineconeVectorStore.from_documents(
   - Delete Functionality 
     - Access the pinecone **index** then use the `index.delete(delete_all=True, namespace='')` 
 - [ ] ~~Handle when Namespace + File is changed all at once~~
-  - Change `if if` to `if elif` because **pdf_file** priority  
+  - Change `if if` to `if elif` because **pdf_file** priority
+
+## 09/18
+- [x] Work on what happens when both fields are changed at once
+  -  If namespace + file was changed it would go into the `pdf_file` block 
+  -  This block now checks if different **namespaces** via: `serializer.validiated_data['namespace'] != handbook.namespace`
+  -  It would then send an optional argument to our `update_vector` pinecone service with a new namespace in which it will use to **ingest**
+  -  Edge Case: User submits same namespace --> Handled with `elif` block that checks for this condition 
+-  Final Results
+   1) User Changes File ONLY 
+      1) Update logic recycles the namespace --> **Deleting and Uploading a new record with that same namespace**
+   2) User Changes Namespace ONLY 
+      1) Queries the vectors with placeholders into an array
+      2) Uses the array to **upsert** into a new namespace 
+   3) User Changes BOTH namespace + PDF file 
+      1) Checks for a change in namespace (making sure its different)
+      2) Deletes the old vectors creating a new one with **new file + namespace**
+   4) User Submits Same namespace with a different PDF file
+      1) Edge Case to treat it as **changing the file ONLY**

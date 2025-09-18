@@ -93,14 +93,15 @@ def delete_vector(namespace: str):
     get_index().delete(delete_all=True, namespace=namespace)
 
 
-def update_vector(text: str, ns: str):
+def update_vector(text: str, ns: str, new_ns: str = None):
     # For us to "Update", we actually have to Delete the old vectors and reingest 
     #
     # We could loop through all vectors and replace them but the question is "What if our users upload a whole different file...?"
     delete_vector(ns)
 
-    # Reinjest new content
-    ingest(text, ns)
+    # # Reingest new content depending on the namespace 
+    targeted_namespace = new_ns if new_ns else ns 
+    ingest(text, targeted_namespace)
 
 def update_namespace(old_ns: str, new_ns: str):
     # Copies the vectors into new namespace 

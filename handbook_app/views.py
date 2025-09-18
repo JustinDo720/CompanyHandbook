@@ -106,7 +106,6 @@ class RetrieveUpdateDestroyHandbook(SpecificSerializerMixin, generics.RetrieveUp
             if 'pdf_file' in request.FILES:
                 # User is sending new pdf file to replace the current 
                 file = request.FILES['pdf_file']
-                print('Changing Files')
                 pdf = fitz.open(stream=file.read(), filetype='pdf')
                 text = ''
                 for page in pdf:
@@ -116,7 +115,18 @@ class RetrieveUpdateDestroyHandbook(SpecificSerializerMixin, generics.RetrieveUp
                 #
                 # This will grab our namespace and DELETE the current vector while creating new vectors with that namespace
                 # Runs through the classic: Splitter, Embed, Ingest 
-                update_vector(text, handbook.get_pc_namespace())
+                #
+                # Double check if the namespace from our request is the same 
+                new_namespace = serializer.validated_data.get('namespace', None)
+                if new_namespace and new_namespace != handbook.namespace:
+                    new_namespace = Handbook.generate_pc_namespace(
+                        handbook.company.company_name, 
+                        serializer.validated_data.get('namespace')
+                    )
+                elif new_namespace == handbook.namespace:
+                    # Edge Case: User submitted a form with the SAME namespace 
+                    new_namespace = None
+                update_vector(text, handbook.get_pc_namespace(), new_namespace)
             elif 'namespace' in request.data:
                 new_namespace = request.data.get('namespace')
                 format_new_namespace = Handbook.generate_pc_namespace(handbook.company.company_name, new_namespace)
