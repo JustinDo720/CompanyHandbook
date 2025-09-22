@@ -213,3 +213,15 @@ store = PineconeVectorStore.from_documents(
       2) Deletes the old vectors creating a new one with **new file + namespace**
    4) User Submits Same namespace with a different PDF file
       1) Edge Case to treat it as **changing the file ONLY**
+  
+## 09/22 
+- [x] Refresher on Celery Beat (LEARNING: NOT IMPLEMENTED YET) 
+  - Setting up `celery.py` + `__init__.py` to autodetech tasks 
+  - Creating **custom django commands** with **BaseCommand** 
+  - Using `call_command()` to run our custom command in our `@shared_task` 
+  - Creating a `CELERY_BEAT_SCHEDULER` object with our tasks / jobs which includes a **CRON** scheduler 
+  - Running up Celery + Beat while resetting the timezone from **UTC** to **New York** 
+    - `celery -A project_name worker -l info --pool=solo`
+    - `celery -A project_name beat -l info`
+  - Making sure we migrate for periodic tasks set up...
+  - [Full Documentation](CeleryBeat.md)
