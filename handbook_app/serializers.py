@@ -28,7 +28,7 @@ class GETHandbookSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             'url': {
-                'view_name': 'retrieve_update_destroy_handbook',
+                'view_name': 'handbook:retrieve_update_destroy_handbook',
                 'lookup_field': 'id'
             }
         }
@@ -57,7 +57,7 @@ class ListHandbookSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             'url': {
-                'view_name': 'retrieve_update_destroy_handbook',
+                'view_name': 'handbook:retrieve_update_destroy_handbook',
                 'lookup_field': 'id'
             }
         }
@@ -82,7 +82,7 @@ class NestedHandbookSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             'url': {
-                'view_name': 'retrieve_update_destroy_handbook',
+                'view_name': 'handbook:retrieve_update_destroy_handbook',
                 'lookup_field': 'id'
             }
         }
