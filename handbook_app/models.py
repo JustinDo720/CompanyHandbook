@@ -28,3 +28,15 @@ class Handbook(models.Model):
         # Return the Pinecone (pc) Namespace for query and ingestion 
         ns = Handbook.generate_pc_namespace(company_name, handbook_name)
         return ns 
+    
+class FAQ(models.Model):
+    """
+        Model to synteheically generate FAQ via Openai LLM 
+            - We don't use User data (privacy)
+    """
+    handbook = models.ForeignKey(Handbook, on_delete=models.CASCADE,related_name='handbook')
+    question = models.CharField(max_length=255)
+    generated_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.handbook.get_pc_namespace()}: {self.question[:65]}...'

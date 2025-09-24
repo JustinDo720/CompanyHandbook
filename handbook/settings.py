@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'djoser',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -171,3 +173,13 @@ DJOSER = {
         'user_create': 'companies.serializers.UserCreateSerializer',
     }
 } 
+
+# Celery Beat Scheduler 
+# Testing purposes
+from datetime import timedelta
+CELERY_BEAT_SCHEDULE = {
+    'run_generate_faq' : {
+        'task': 'handbook_app.tasks.gen_faq',
+        'schedule': crontab(minute=0, hour=0) if not DEBUG else timedelta(seconds=15)   # Midnight 
+    }
+}

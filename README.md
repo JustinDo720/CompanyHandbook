@@ -225,3 +225,18 @@ store = PineconeVectorStore.from_documents(
     - `celery -A project_name beat -l info`
   - Making sure we migrate for periodic tasks set up...
   - [Full Documentation](CeleryBeat.md)
+
+## 09/24
+- [x] Celery + Beat Integration 
+  - **Idea**: Midnight --> FQA generation. **Premium** users could generate on **Quota** reset Daily
+  - [x] Celery workers and Beat setup
+  - [x] Set up Premium User Status
+  - [x] FQA Task on Midnight (EST not UTC)
+    - Generate FAQ on files that don't have an FAQ
+    - Django Custom Command to filter **handbooks** on **faq model set** that are **empty**
+    - Query **pinecone db** with dummy vectors to pull top **10,000** results (which is basically the entire document)
+    - Built that context for **LLM** to read and generate questions delimited by '|' for us to split 
+    - Used those questions to build instances of our **FAQ** model 
+  - [ ] ~~Build Quota model + Task to reset midnight~~
+  - [ ] ~~Test FAQ custom command + Celery + Beat~~
+  - [ ] ~~Add Email for notifications~~

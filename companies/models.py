@@ -6,6 +6,7 @@ from django.utils.text import slugify
 class CompanyUser(AbstractUser):
     company_name = models.CharField(max_length=155, unique=True)
     company_slug = models.SlugField(max_length=155, null=True, blank=True)
+    premium = models.BooleanField(default=False) 
 
     def gen_company_slug(self):
         curr_slug = slugify(self.company_name)
