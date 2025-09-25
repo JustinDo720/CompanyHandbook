@@ -180,6 +180,15 @@ from datetime import timedelta
 CELERY_BEAT_SCHEDULE = {
     'run_generate_faq' : {
         'task': 'handbook_app.tasks.gen_faq',
-        'schedule': crontab(minute=0, hour=0) if not DEBUG else timedelta(seconds=15)   # Midnight 
+        'schedule': crontab(minute=0, hour=0) if not DEBUG else timedelta(minutes=1)   # Midnight 
     }
 }
+
+# Django Email 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER') 
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD') 
+EMAIL_RECIPIENT = os.getenv('EMAIL_RECIPIENT')

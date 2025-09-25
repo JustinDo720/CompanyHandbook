@@ -3,6 +3,7 @@ from openai import OpenAI
 from django.conf import settings
 from handbook_app.models import Handbook, FAQ
 from handbook_app.services.pinecone_services import get_index
+from django.core.mail import send_mail
 
 # Helper function to feed OpenAI our prompt
 def generate_faq(ai_client, handbook):
@@ -63,10 +64,12 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         ai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
         handbook_id = kwargs.get('handbook_id', None)
+        num_generated = 0
         if handbook_id:
             # Generating based on a specific handbook
             specific_handbook = Handbook.objects.get(id=handbook_id)
             generate_faq(ai_client, specific_handbook)
+            num_generated += 1
         else:
             # NOT OPTIMAL (works but NOT optimal we just want to check for nullity)
             # # Generating based on handbooks that do not have FAQ 
@@ -75,6 +78,16 @@ class Command(BaseCommand):
             #     if not handbook.faq_set.count > 0:
             #         # Handbook doesn't have FAQ let's add
             #         pass 
-            handbooks_without_faq = Handbook.objects.filter(faq_set__isnull = True)
+            # We could do faq__isnull because of the related_name
+            handbooks_without_faq = Handbook.objects.filter(faq__isnull = True)
             for handbook in handbooks_without_faq:
                 generate_faq(ai_client, handbook)
+                num_generated += 1
+        # Regardless of handbook_id, we want to send an email 
+        send_mail(
+            subject="FAQ Generation Complete",
+            message=f"Generated {num_generated} new questions.\nTotal FAQs: {FAQ.objects.count()}",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[settings.EMAIL_RECIPIENT, settings.EMAIL_HOST_USER],
+            fail_silently=True,
+        )

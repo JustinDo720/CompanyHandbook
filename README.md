@@ -240,3 +240,18 @@ store = PineconeVectorStore.from_documents(
   - [ ] ~~Build Quota model + Task to reset midnight~~
   - [ ] ~~Test FAQ custom command + Celery + Beat~~
   - [ ] ~~Add Email for notifications~~
+
+## 09/25
+- [x] Test FAQ Celery 
+  - We're expecting a few things to run:
+    - Celery Beat **recognizes the task** --> **Sends task with Celery** Worker via Broker --> Executes tasks which **calls django custom command** --> Filters **handbook without FAQ** set --> Check for optional **handbook_id** argument --> **Queries Pinecone** index for the specific namespace --> OpenAI uses context to **generate 5 FAQ** --> **Creates an FAQ instance** for respective handbook 
+  - Fixed
+    - `related_name='handbook'` in FAQ model was incorrect. It should be realted to the CURRENT model; therefore -> `related_name='faq'`
+  - Added 
+    - FAQ under handbook retrieval 
+- [x] Email Notifications upon success 
+  - Make sure to turn on **2 Factor Auth** then Search for **App Password**
+  - Follow [Geeks4Geeks](https://www.geeksforgeeks.org/python/setup-sending-email-in-django-project/) guide
+- [ ] ~~Build Quota MOdel~~ 
+
+<img src='email_success.PNG'>

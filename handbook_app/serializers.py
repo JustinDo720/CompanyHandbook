@@ -1,5 +1,14 @@
 from rest_framework import serializers
-from .models import Handbook
+from .models import Handbook, FAQ
+
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = (
+            'question',
+            'generated_on'
+        )
 
 class GETHandbookSerializer(serializers.ModelSerializer):
     company_name = serializers.SerializerMethodField()
@@ -10,6 +19,10 @@ class GETHandbookSerializer(serializers.ModelSerializer):
         read_only=True,
         lookup_field='id'
     )
+    # Be sure to use the source='faq' for realted_names 
+    #
+    # Think of it from a Handbook instance POV --> you would have handbook_instance.faq thats why source is faq
+    faq_questions = FAQSerializer(source='faq', many=True, read_only=True)
 
     def get_company_name(self, handbook):
         return handbook.company.company_name
@@ -24,7 +37,8 @@ class GETHandbookSerializer(serializers.ModelSerializer):
             'company_url',
             'namespace',
             'pdf_file',
-            'created'
+            'created',
+            'faq_questions'
         )
         extra_kwargs = {
             'url': {
