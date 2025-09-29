@@ -29,3 +29,11 @@ class CompanyUser(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+
+class Quota(models.Model):
+    company = models.ForeignKey(CompanyUser, on_delete=models.CASCADE, related_name='quota')
+    amount = models.IntegerField(default=5)
+
+    def __str__(self):
+        return f'{self.company.company_name}: {self.amount} remaining...'

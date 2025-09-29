@@ -255,3 +255,12 @@ store = PineconeVectorStore.from_documents(
 - [ ] ~~Build Quota MOdel~~ 
 
 <img src='email_success.PNG'>
+
+## 09/29 
+- [x] Building Quota MOdel 
+  - Quota Model has a foriegn key with Company 
+  - Default set to 5 which will be reduced daily 
+- [x] Stripe API Payment INtent for Premium User 
+  - Payment Intent created to grab `client_secret` which contains the **intent id**
+  - Payment verified by checking the **intent id** withe some information via **stripe API**
+- TODO: Test Endpoints via Frontend UI. Create Celery Task to handle resetting Quota.
