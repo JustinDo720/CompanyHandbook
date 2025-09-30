@@ -180,7 +180,11 @@ from datetime import timedelta
 CELERY_BEAT_SCHEDULE = {
     'run_generate_faq' : {
         'task': 'handbook_app.tasks.gen_faq',
-        'schedule': crontab(minute=0, hour=0) if not DEBUG else timedelta(minutes=1)   # Midnight 
+        'schedule': crontab(minute=0, hour=0)   # Midnight 
+    },
+    'run_reset_quotas' : {
+        'task': 'companies.tasks.reset_quota',
+        'schedule': crontab(minute=0, hour=0) if not DEBUG else timedelta(minutes=1)
     }
 }
 

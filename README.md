@@ -264,3 +264,10 @@ store = PineconeVectorStore.from_documents(
   - Payment Intent created to grab `client_secret` which contains the **intent id**
   - Payment verified by checking the **intent id** withe some information via **stripe API**
 - TODO: Test Endpoints via Frontend UI. Create Celery Task to handle resetting Quota.
+
+## 09/30 
+- [x] Celery Task to Reset Quota
+  - Created task under `companies/tasks.py` 
+  - Created custom django command under `companies/management/commands` 
+
+<img src='quota_reset_email_success.PNG'>
