@@ -11,3 +11,7 @@ from django.core.management import call_command
 @shared_task
 def gen_faq():
     call_command('generate_faq')
+
+# @shared_task
+# def reset_quota():
+#     call_command('reset_quota')

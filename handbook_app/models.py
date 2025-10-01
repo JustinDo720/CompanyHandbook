@@ -34,7 +34,8 @@ class FAQ(models.Model):
         Model to synteheically generate FAQ via Openai LLM 
             - We don't use User data (privacy)
     """
-    handbook = models.ForeignKey(Handbook, on_delete=models.CASCADE,related_name='handbook')
+    # Make sure the related_name is for THIS model: instead of related_name="handbook" it should be related_name='faq'
+    handbook = models.ForeignKey(Handbook, on_delete=models.CASCADE,related_name='faq')
     question = models.CharField(max_length=255)
     generated_on = models.DateTimeField(auto_now_add=True)
 
