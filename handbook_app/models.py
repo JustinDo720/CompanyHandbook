@@ -1,6 +1,6 @@
 from django.db import models
 from .validators import validate_file_extension
-from companies.models import CompanyUser
+from companies.models import Company
 from django.utils.text import slugify
 
 # Create your models here.
@@ -11,7 +11,7 @@ class Handbook(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     # FK to represent a One-Many (Company-Handbook) relationship 
-    company = models.ForeignKey(CompanyUser, on_delete=models.CASCADE, related_name='handbooks')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='handbooks')
 
     def __str__(self):
         return self.namespace

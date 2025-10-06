@@ -30,7 +30,14 @@ SECRET_KEY = 'django-insecure-*0l1-80afs8bh!ly)7ys0afoo-!_thaf$(f$!1&h**rv^sx5pd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Domain 
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# Cors 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 
 # Pinecone Keys
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
@@ -56,9 +63,11 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'djoser',
     'django_celery_beat',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

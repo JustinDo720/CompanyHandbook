@@ -271,3 +271,32 @@ store = PineconeVectorStore.from_documents(
   - Created custom django command under `companies/management/commands` 
 
 <img src='quota_reset_email_success.PNG'>
+
+## 10/02 
+- Working on Frontend 
+- Django Cors to connect Frontend with Backend application 
+  - `pip install django-cors-headers`
+  - Add `corsheaders` to installed apps 
+    - set up `CORS_ALLOWED_ORIGINS` in settings with the http link 
+    - add **domain** to `ALLOWED_HOSTS`
+
+## 10/06
+- Reworking Company - User Logic (Refactor)
+  - **Multi-Tenant** Design 
+  - CompanyUser model split into => Company Model & Company User (Employee)
+    - Company Null by default then User gets to register 
+  - Frontend Explaination 
+    - **Register new Company** vs **Join exsiting Company** 
+- New System Vision (version MVP)
+  - All users are **Employees** by default 
+  - User chooses path A or B
+    - A) Register Company 
+    - B) Join Company
+  - Invite Code / Manually Search + Invite Pending 
+  - If User good... allows access to Chat 
+  - Owner (Optioanl Public vs Private) --> Knowledge Hub vs Knowledge Portal 
+- [x] Company Model + Company Employee Changes 
+  - Seperated Company model with their Users 
+  - One-to-One for owner and company
+  - Built API for users and companies seperately (plus the serializers)
+  - Fixed URLs in restful api 

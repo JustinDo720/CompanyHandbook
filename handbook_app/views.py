@@ -8,7 +8,7 @@ from .models import Handbook
 from .serializers import GETHandbookSerializer, POSTHandbookSerializer, ListHandbookSerializer
 from .permissions import IsOwnerOrAdminHandbook
 import fitz
-from companies.models import CompanyUser
+from companies.models import CompanyUser, Company
 
 
 # Links to all the necessaary API 
@@ -18,7 +18,8 @@ class HomePage(APIView):
             # "question-api": reverse('answer_question', request=request),
             "handbook-api": reverse('handbook:list_create_handbook', request=request),
             # Make sure we have the app_name in comapnies app and we use a ":" not a "."
-            "company-api": reverse('companies:list_companies', request=request)
+            "company-api": reverse('companies:list_companies', request=request),
+            "users-api": reverse('companies:list_users', request=request)
         })
 
 

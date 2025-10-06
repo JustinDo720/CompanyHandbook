@@ -1,19 +1,29 @@
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.generics import ListAPIView, RetrieveDestroyAPIView
-from .serializers import ListCompanyUserSerializer, RetrieveCompanyUserSerializer
-from .models import CompanyUser
+from rest_framework.generics import ListAPIView, RetrieveDestroyAPIView, ListCreateAPIView
+from .serializers import ListCompanyUserSerializer, RetrieveCompanyUserSerializer, ListCompanySerializer, RetrieveCompanySerializer
+from .models import CompanyUser, Company
 from rest_framework.views import APIView
 from companies.services.stripe_services import create_payment_intent, verify_payment
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
-class ListCompanyUser(ListAPIView):
+# Chaning Company User to Company
+class ListCompany(ListCreateAPIView):
+    queryset = Company.objects.all()
+    serializer_class = ListCompanySerializer
+
+class RetrieveCompany(RetrieveDestroyAPIView):
+    queryset = Company.objects.all()
+    serializer_class = RetrieveCompanySerializer
+    lookup_field = 'company_slug'
+
+class ListUsers(ListAPIView):
     queryset = CompanyUser.objects.all()
     serializer_class = ListCompanyUserSerializer
 
-class RetrieveCompanyUser(RetrieveDestroyAPIView):
+class RetrieveUser(RetrieveDestroyAPIView):
     queryset = CompanyUser.objects.all()
     serializer_class = RetrieveCompanyUserSerializer
     lookup_field = 'id'
