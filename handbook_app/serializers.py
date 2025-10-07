@@ -17,7 +17,7 @@ class GETHandbookSerializer(serializers.ModelSerializer):
         source='company',
         view_name='companies:retrieve_company',
         read_only=True,
-        lookup_field='id'
+        lookup_field='company_slug'
     )
     # Be sure to use the source='faq' for realted_names 
     #
@@ -54,7 +54,7 @@ class ListHandbookSerializer(serializers.ModelSerializer):
         source='company',
         view_name='companies:retrieve_company',
         read_only=True,
-        lookup_field='id'
+        lookup_field='company_slug'
     )
 
     def get_company_name(self, handbook):

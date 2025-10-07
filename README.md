@@ -300,3 +300,13 @@ store = PineconeVectorStore.from_documents(
   - One-to-One for owner and company
   - Built API for users and companies seperately (plus the serializers)
   - Fixed URLs in restful api 
+
+## 10/07
+- [x] Refactoring Handbook 
+  - Changed Hyperlinks to use `company_slug` as their lookup 
+  - Retested Handbook Endpoints to ensure that they work with the new company models 
+  - Added **pagination** to our companies
+- Return to Frontend and build:
+  - Display Companies BUT don't allow chat unless they register 
+  - Work on Registration Form to allow the 2 paths
+    - Register Company or Register existing 

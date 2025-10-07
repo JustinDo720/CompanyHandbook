@@ -7,12 +7,14 @@ from rest_framework.views import APIView
 from companies.services.stripe_services import create_payment_intent, verify_payment
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from .pagination import CompanyPagination
 
 # Create your views here.
 # Chaning Company User to Company
 class ListCompany(ListCreateAPIView):
     queryset = Company.objects.all()
     serializer_class = ListCompanySerializer
+    pagination_class = CompanyPagination
 
 class RetrieveCompany(RetrieveDestroyAPIView):
     queryset = Company.objects.all()
