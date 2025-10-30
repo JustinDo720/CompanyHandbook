@@ -71,3 +71,21 @@ class Quota(models.Model):
 
     def __str__(self):
         return f'{self.company.company_name}: {self.amount} remaining...'
+    
+
+class Invite(models.Model):
+
+    STATUS_CHOICES = [
+        ('p', 'Pending'),
+        ('a', 'Accepted'),
+        ('d', 'Declined')
+    ]
+
+    requested_user = models.ForeignKey(CompanyUser, on_delete=models.CASCADE, related_name='requested_invites')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='invites')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='p')
+    sent = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Invite to {self.company.company_name} from {self.requested_user.username}'

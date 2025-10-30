@@ -310,3 +310,27 @@ store = PineconeVectorStore.from_documents(
   - Display Companies BUT don't allow chat unless they register 
   - Work on Registration Form to allow the 2 paths
     - Register Company or Register existing 
+
+## 10/10 + 10/14
+- [x] Lightweight endpoint to validate our user authentication before proceeding 
+  - Checks Password with `validate_password` and successfully appends into a list of errors (if necessary)
+- [x] Issue 
+  - User URL has some issues regarding CompanyUser 
+    - List of User > User Url 
+  - Fixed Owner to List Company 
+    - Necessary for POSTING 
+- If a Company has an owner we need to make sure the owner has their respected Company after applying 
+  - Make a CUSTOM ListCreate Company POST method where you access the requested user and set their company id to the newly created on you're welcome :))
+
+### 10/16 
+- [x] Custom Company POST for Company Owner issue
+  - Custom POST with company instance to access the owner id 
+- [x] Fix Django Rest User URL
+  -  CompanyUser is no longer related to handbooks directly
+  -  Company Model relates to handbook via ForiegnKey so we must apply the answer API under company 
+- [x] Work on Frontend Navigate After registration 
+- [x] Use Redux and LocalStorage for AccesToken + Refresh Token
+  - Customized PairTokens by creating our own **serializer** based on **TokenObtainPairSerializer**: `data = super().validate(attrs)` to run the original validate function while we add on our own fields
+  - Override the **TokenObtainPairView** with our serializer and override the **jwt/create/** endpoint to use our new custom view function
+- [ ] Implement Login Feature to finish the authentication system 
+

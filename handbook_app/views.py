@@ -19,6 +19,7 @@ class HomePage(APIView):
             "handbook-api": reverse('handbook:list_create_handbook', request=request),
             # Make sure we have the app_name in comapnies app and we use a ":" not a "."
             "company-api": reverse('companies:list_companies', request=request),
+            "invite-api": reverse('companies:view_create_invites', request=request),
             "users-api": reverse('companies:list_users', request=request)
         })
 
@@ -177,7 +178,7 @@ class AskQuestion(APIView):
         q = request.data.get('question')
         try:
             # We should have the company name in our URLS so we could access via **kwargs
-            company = CompanyUser.objects.get(company_slug=kwargs.get('company'))
+            company = Company.objects.get(company_slug=kwargs.get('company_slug'))
             """
             TODO: Reconfigure Question function to FILTEr via company slug (grab all the files pertaining to the company) [DONE]
             TODO: Check if this APIVIew works with kwargs.get('company') query [DONE]
